@@ -1,1 +1,5 @@
-SeahawksTGBot
+asyncio
+telepot
+telepot.aio
+apscheduler
+tweepy
