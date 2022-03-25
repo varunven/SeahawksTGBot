@@ -5,6 +5,7 @@ from telepot.aio.loop import MessageLoop
 from MineTweets import TweetMiner
 from telepot.namedtuple import ReplyKeyboardMarkup, KeyboardButton
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
+import auth_tokens
 
 # MAJOR CHANGE MADE TO TELEPOT IN PYTHON3100/LIB/SITE-PACKAGES/LOOP.PY TO CHANGE
 # _EXTRACT_MESSAGE TO INCLUDE 'update_id' AS PART OF KEY. MAKE SURE TO ADD TO END OF LIST
@@ -111,8 +112,8 @@ if __name__ == "__main__":
     updatetweetboard = [updatetweetboard[i:i + 4]
                         for i in range(0, len(updatetweetboard), 4)]
 
-    TOKEN = '5222794687:AAEdmQ-zkCSx35sPpP0zGGoNkdHKfToNnQQ'
-    form_url = "https://docs.google.com/forms/d/e/1FAIpQLScAzUoQKN6edA85vrOJcp-wY0tfaUQlofk8aV_RI_pSolEkKw/viewform?usp=sf_link"
+    TOKEN = auth_tokens.TOKEN
+    form_url = auth_tokens.TOKEN
     bot = telepot.aio.Bot(TOKEN)
     asyncio.get_event_loop().create_task(MessageLoop(
         bot, handle_msg).run_forever())
