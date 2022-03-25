@@ -6,6 +6,7 @@ from MineTweets import TweetMiner
 from telepot.namedtuple import ReplyKeyboardMarkup, KeyboardButton
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 import os
+from time import sleep
 
 # MAJOR CHANGE MADE TO TELEPOT IN PYTHON3100/LIB/SITE-PACKAGES/LOOP.PY TO CHANGE
 # _EXTRACT_MESSAGE TO INCLUDE 'update_id' AS PART OF KEY. MAKE SURE TO ADD TO END OF LIST
@@ -86,6 +87,7 @@ async def handle_msg(msg):
 
 
 async def update_tweets():
+    sleep(60)
     data = miner.mine_all_tweets()
     if len(data) != 0:
         with open('group_chat_ids.txt') as f:
@@ -122,6 +124,8 @@ if __name__ == "__main__":
     scheduler = AsyncIOScheduler()
     scheduler.add_job(update_tweets, 'interval', minutes=5)
     scheduler.start()
+
+    asyncio.get_event_loop().create_task(update_tweets())
 
     print('Listening ...')
 
