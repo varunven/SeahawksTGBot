@@ -1,10 +1,13 @@
-import auth_tokens
 import tweepy
+import os
 
 # twitter auth keys
 
 # class TweetMiner to mine for the appropriate tweets- use methods as true
-auth = auth_tokens.auth
+auth = {'consumer_key': os.environ.get("twitter_consumer_key"),
+        'consumer_secret': os.environ.get("twitter_consumer_secret"),
+        'access_token_key': os.environ.get("twitter_access_key"),
+        'access_token_secret': os.environ.get("twitter_access_secret")}
 
 
 class TweetMiner():
