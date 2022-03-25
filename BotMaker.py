@@ -76,11 +76,11 @@ async def handle_msg(msg):
         # used to check if user wants latest tweets from a specific insider
         elif msg['text'].split(' ')[-1] == 'update' and msg['text'][0] == '@':
             screen_name = msg['text'].split(' ')[0][1:]
-            data = miner.get_insider_latest_tweet(screen_name=screen_name)
+            data = miner.mine_user_tweets(screen_name=screen_name)
             if data == "":
                 await bot.sendMessage(chat_id, "No new tweets found from " + screen_name)
             else:
-                await bot.sendMessage(chat_id, miner.mine_user_tweets(screen_name=screen_name))
+                await bot.sendMessage(chat_id, data)
 
 # sends to a chat the updates from update_tweets automatically
 
