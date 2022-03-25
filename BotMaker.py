@@ -113,7 +113,7 @@ if __name__ == "__main__":
                         for i in range(0, len(updatetweetboard), 4)]
 
     TOKEN = auth_tokens.TOKEN
-    form_url = auth_tokens.TOKEN
+    form_url = "https://docs.google.com/forms/d/e/1FAIpQLScAzUoQKN6edA85vrOJcp-wY0tfaUQlofk8aV_RI_pSolEkKw/viewform?usp=sf_link"
     bot = telepot.aio.Bot(TOKEN)
     asyncio.get_event_loop().create_task(MessageLoop(
         bot, handle_msg).run_forever())
