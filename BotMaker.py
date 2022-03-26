@@ -96,9 +96,6 @@ def update_tweets(chat_ids):
         for chat_id in chat_ids:
             for i in data:
                 bot.sendMessage(chat_id, i)
-    else:
-        for chat_id in chat_ids:
-            bot.sendMessage(chat_id, "no data")
 
 
 # Program startup, establishes miner, keyboard prompts, and connects with telegram API
@@ -121,7 +118,6 @@ if __name__ == "__main__":
                         for i in range(0, len(updatetweetboard), 4)]
 
     TOKEN = os.environ.get("TelegramAPI")
-    # TOKEN = "5222794687:AAEdmQ-zkCSx35sPpP0zGGoNkdHKfToNnQQ"
     bot = telepot.Bot(TOKEN)
     MessageLoop(bot, handle_msg).run_as_thread()
 
@@ -129,4 +125,4 @@ if __name__ == "__main__":
 
     while(1):
         update_tweets(chat_ids)
-        sleep(30)
+        sleep(900)
