@@ -10,9 +10,9 @@ import os
 #         'access_token_secret': os.environ.get("twitter_access_secret")}
 
 auth = {'consumer_key': os.environ.get("twitter_consumer_key"),
-        'consumer_secret': "twitter_consumer_secret",
-        'access_token_key': "twitter_access_key",
-        'access_token_secret': "twitter_access_secret"}
+        'consumer_secret': os.environ.get("twitter_consumer_secret"),
+        'access_token_key': os.environ.get("twitter_access_key"),
+        'access_token_secret': os.environ.get("twitter_access_secret")}
 
 
 class TweetMiner():
