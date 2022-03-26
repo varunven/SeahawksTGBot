@@ -1,8 +1,7 @@
-import telepot
-from telepot.loop import MessageLoop
+import mytelepot.telepot as telepot
+from mytelepot.telepot.loop import MessageLoop
 from MineTweets import TweetMiner
-from telepot.namedtuple import ReplyKeyboardMarkup, KeyboardButton
-from apscheduler.schedulers.blocking import BlockingScheduler
+from mytelepot.telepot.namedtuple import ReplyKeyboardMarkup, KeyboardButton
 import os
 from time import sleep
 
