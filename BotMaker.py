@@ -5,12 +5,13 @@ from telepot.namedtuple import ReplyKeyboardMarkup, KeyboardButton
 from apscheduler.schedulers.blocking import BlockingScheduler
 import os
 from time import sleep
-import requests
 
 # MAJOR CHANGE MADE TO TELEPOT IN PYTHON3100/LIB/SITE-PACKAGES/LOOP.PY TO CHANGE
 # _EXTRACT_MESSAGE TO INCLUDE 'update_id' AS PART OF KEY. MAKE SURE TO ADD TO END OF LIST
 
 # general handling of messages- small, niche number of cases for each command
+
+chat_ids = set()
 
 
 def handle_msg(msg):
@@ -20,7 +21,7 @@ def handle_msg(msg):
     print("Message:", content_type, chat_type, chat_id)
     if(content_type == "new_chat_member"):
         chat_ids.add(chat_id)
-    elif(content_type == "left_chat_member"):
+    elif(content_type == "left_chat_member" and (chat_id in chat_ids)):
         chat_ids.remove(chat_id)
     # Send our JSON msg variable as reply message
     if content_type == 'text':
@@ -90,13 +91,15 @@ def handle_msg(msg):
 
 
 def update_tweets(chat_ids):
+    print(chat_ids)
     data = miner.mine_all_tweets()
     if len(data) != 0:
         for chat_id in chat_ids:
             for i in data:
                 bot.sendMessage(chat_id, i)
     else:
-        bot.sendMessage(-678532946, "data")
+        for chat_id in chat_ids:
+            bot.sendMessage(chat_id, "no data")
 
 
 # Program startup, establishes miner, keyboard prompts, and connects with telegram API
@@ -118,14 +121,13 @@ if __name__ == "__main__":
     updatetweetboard = [updatetweetboard[i:i + 4]
                         for i in range(0, len(updatetweetboard), 4)]
 
-    # TOKEN = os.environ.get("TelegramAPI")
-    TOKEN = "5222794687:AAEdmQ-zkCSx35sPpP0zGGoNkdHKfToNnQQ"
+    TOKEN = os.environ.get("TelegramAPI")
+    # TOKEN = "5222794687:AAEdmQ-zkCSx35sPpP0zGGoNkdHKfToNnQQ"
     bot = telepot.Bot(TOKEN)
     MessageLoop(bot, handle_msg).run_as_thread()
-    chat_ids = set()
 
     print('Listening ...')
 
     while(1):
         update_tweets(chat_ids)
-        sleep(10)
+        sleep(30)
