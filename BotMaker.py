@@ -26,12 +26,7 @@ def handle_msg(msg):
     if content_type == 'text':
 
         # returns all the insiders
-        if msg['text'] == '/getaccess' or msg['text'] == '/getaccess@seahawks_tg_bot':
-            bot.sendMessage(chat_id, "To request access in your group chat, please fill out the following form:\n" +
-                            form_url+"\nThis helps us manage server overload. Thanks.")
-
-        # returns all the insiders
-        elif msg['text'] == '/getinsiders' or msg['text'] == '/getinsiders@seahawks_tg_bot':
+        if msg['text'] == '/getinsiders' or msg['text'] == '/getinsiders@seahawks_tg_bot':
             bot.sendMessage(chat_id, miner.get_insiders())
 
         # returns all the latest tweets
@@ -91,7 +86,7 @@ def handle_msg(msg):
             else:
                 bot.sendMessage(chat_id, data)
 
-# sends to all chat the updates from update_tweets automatically
+# sends to a chat the updates from update_tweets automatically
 
 
 def update_tweets(chat_ids):
@@ -100,6 +95,8 @@ def update_tweets(chat_ids):
         for chat_id in chat_ids:
             for i in data:
                 bot.sendMessage(chat_id, i)
+    else:
+        bot.sendMessage(-678532946, "data")
 
 
 # Program startup, establishes miner, keyboard prompts, and connects with telegram API
@@ -122,14 +119,13 @@ if __name__ == "__main__":
                         for i in range(0, len(updatetweetboard), 4)]
 
     # TOKEN = os.environ.get("TelegramAPI")
-    TOKEN = os.environ.get("TelegramAPI")
-    form_url = "https://docs.google.com/forms/d/e/1FAIpQLScAzUoQKN6edA85vrOJcp-wY0tfaUQlofk8aV_RI_pSolEkKw/viewform?usp=sf_link"
+    TOKEN = "5222794687:AAEdmQ-zkCSx35sPpP0zGGoNkdHKfToNnQQ"
     bot = telepot.Bot(TOKEN)
-    MessageLoop(bot, handle_msg).run_forever()
+    MessageLoop(bot, handle_msg).run_as_thread()
     chat_ids = set()
 
     print('Listening ...')
 
     while(1):
         update_tweets(chat_ids)
-        sleep(900)
+        sleep(10)
