@@ -4,10 +4,15 @@ import os
 # twitter auth keys
 
 # class TweetMiner to mine for the appropriate tweets- use methods as true
+# auth = {'consumer_key': os.environ.get("twitter_consumer_key"),
+#         'consumer_secret': os.environ.get("twitter_consumer_secret"),
+#         'access_token_key': os.environ.get("twitter_access_key"),
+#         'access_token_secret': os.environ.get("twitter_access_secret")}
+
 auth = {'consumer_key': os.environ.get("twitter_consumer_key"),
-        'consumer_secret': os.environ.get("twitter_consumer_secret"),
-        'access_token_key': os.environ.get("twitter_access_key"),
-        'access_token_secret': os.environ.get("twitter_access_secret")}
+        'consumer_secret': "twitter_consumer_secret",
+        'access_token_key': "twitter_access_key",
+        'access_token_secret': "twitter_access_secret"}
 
 
 class TweetMiner():
@@ -32,7 +37,6 @@ class TweetMiner():
         auth = tweepy.OAuth1UserHandler(
             keys_dict['consumer_key'], keys_dict['consumer_secret'],
             keys_dict['access_token_key'], keys_dict['access_token_secret'])
-
         self.api = tweepy.API(auth)
         self.result_limit = result_limit
         self.insiders = set()
