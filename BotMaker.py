@@ -53,8 +53,14 @@ def getinsiders(update: Update, context: CallbackContext) -> int:
 
 def getlatesttweets(update: Update, context: CallbackContext) -> None:
     data = miner.get_insiders_latest_tweets()
-    for i in data:
-        update.message.reply_text(i)
+    for i in range(len(data)):
+        item = data[i]
+        try:
+            update.message.reply_text(item)
+        except:
+            update.message.reply_text(
+                "Timed out. There may be too many tweets with this keyword to handle")
+            i -= 1
 
 # process the latest tweet provided based on insider
 
@@ -84,8 +90,9 @@ def processkeyword(update: Update, context: CallbackContext) -> int:
     if len(data) == 0:
         update.message.reply_text(
             "No tweets found in the last 12 hours containing " + msg)
-    for i in data:
-        update.message.reply_text(i)
+    else:
+        for i in data:
+            update.message.reply_text(i)
     return ConversationHandler.END
 
 # returns the latest tweet of a user selected by the user from the latesttweetbuttonboard
@@ -93,7 +100,7 @@ def processkeyword(update: Update, context: CallbackContext) -> int:
 
 def gettweetswithkeyword(update: Update, context: CallbackContext) -> int:
     update.message.reply_text(
-        "Please type your keyword in the chat (Type /cancel to cancel)")
+        "First, ensure Seahawks Twitter Feed has access to messages. Then, please type your keyword in the chat (Type /cancel to cancel)")
     return GETKEYWORD
 
 # updates tweets to newest cycle

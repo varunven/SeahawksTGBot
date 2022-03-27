@@ -179,12 +179,24 @@ class TweetMiner():
                 user_id = self.api.get_user(screen_name=screen_name).id
             data = ""
             if user_id in self.insiders:
-                latest_tweet_id = self.user_to_latest_tweet_id[user_id]
                 statuses = self.api.user_timeline(
-                    user_id=user_id, include_rts=False, exclude_replies=True, tweet_mode="extended")
+                    user_id=user_id, count=5, include_rts=False, exclude_replies=True, tweet_mode="extended")
                 if len(statuses) == 0:
                     return "No new tweets found since last request from " + self.user_to_name[user_id]
-                self.user_to_latest_tweet_id[user_id] = statuses[0].id
+                new_latest_tweet = statuses[0]
+                self.user_to_latest_tweet_id[user_id] = new_latest_tweet.id
+
+                self.tweet_id_to_text[new_latest_tweet.id] = new_latest_tweet.full_text
+
+                try:
+                    quote_text = new_latest_tweet.quoted_status.full_text
+                    quote_name = new_latest_tweet.quoted_status.user.name
+                    self.tweet_id_to_quoted_text[new_latest_tweet.id] = quote_text
+                    self.tweet_id_to_quoted_screen_name[new_latest_tweet.id] = quote_name
+                except:
+                    quote_text = None
+                    quote_name = None
+
             else:
                 return str(user_id) + " is either not valid or is not considered a reputable source"
             total = 0
