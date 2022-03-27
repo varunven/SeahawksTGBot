@@ -1,103 +1,135 @@
-import mytelepot.telepot as telepot
-from mytelepot.telepot.loop import MessageLoop
 from MineTweets import TweetMiner
-from mytelepot.telepot.namedtuple import ReplyKeyboardMarkup, KeyboardButton
 import os
 from time import sleep
+from telegram import Update, ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardRemove
+from telegram.ext import MessageHandler, Filters, ConversationHandler, Updater, CommandHandler, CallbackContext
 
 # MAJOR CHANGE MADE TO TELEPOT IN PYTHON3100/LIB/SITE-PACKAGES/LOOP.PY TO CHANGE
 # _EXTRACT_MESSAGE TO INCLUDE 'update_id' AS PART OF KEY. MAKE SURE TO ADD TO END OF LIST
 
 # general handling of messages- small, niche number of cases for each command
 
+GETINSIDER = range(1)
+GETKEYWORD = range(1)
+GETINSIDERUPDATE = range(1)
 chat_ids = set()
 
 
-def handle_msg(msg):
-    # These are some useful variables
-    content_type, chat_type, chat_id = telepot.glance(msg)
-    # Log variables
-    print("Message:", content_type, chat_type, chat_id)
-    if(content_type == "new_chat_member"):
-        chat_ids.add(chat_id)
-    elif(content_type == "left_chat_member" and (chat_id in chat_ids)):
-        chat_ids.remove(chat_id)
-    # Send our JSON msg variable as reply message
-    if content_type == 'text':
-
-        # returns all the insiders
-        if msg['text'] == '/getinsiders' or msg['text'] == '/getinsiders@seahawks_tg_bot':
-            bot.sendMessage(chat_id, miner.get_insiders())
-
-        # returns all the latest tweets
-        elif msg['text'] == '/getlatesttweets' or msg['text'] == '/getlatesttweets@seahawks_tg_bot':
-            data = miner.get_insiders_latest_tweets()
-            for i in data:
-                bot.sendMessage(chat_id, i)
-
-        # returns the latest tweet of a user selected by the user from the latesttweetbuttonboard
-        elif msg['text'] == '/getlatesttweetfromuser' or msg['text'] == '/getlatesttweetfromuser@seahawks_tg_bot':
-            bot.sendMessage(chat_id, 'Select an Insider To Get the Latest Tweet Of',
-                            reply_markup=ReplyKeyboardMarkup(
-                                keyboard=latesttweetboard
-                            ))
-
-        # returns all the latest tweets with a keyword
-        elif msg['text'] == '/gettweetswithkeyword' or msg['text'] == '/gettweetswithkeyword@seahawks_tg_bot':
-            bot.sendMessage(
-                chat_id, "Please type your word, ______, in the chat with the format 'keyword: ______'")
-
-        elif msg['text'].split()[0] == 'keyword:':
-            data = miner.mine_for_new_tweets_with_keyword(
-                msg['text'].split()[1])
-            for i in data:
-                bot.sendMessage(chat_id, i)
-
-        # used to check if user wants latest tweets from a specific insider
-        elif msg['text'].split(' ')[-1] == 'latest' and msg['text'][0] == '@':
-            screen_name = msg['text'].split(' ')[0][1:]
-            bot.sendMessage(chat_id, miner.get_insider_latest_tweet(
-                screen_name=screen_name))
-
-        # updates all tweets
-        elif msg['text'] == '/updatetweets' or msg['text'] == '/updatetweets@seahawks_tg_bot':
-            data = miner.mine_all_tweets()
-            if len(data) == 0:
-                bot.sendMessage(
-                    chat_id, "No new tweets found since last request")
-            else:
-                for i in data:
-                    bot.sendMessage(chat_id, i)
-
-        # updates tweets for one user
-        elif msg['text'] == '/updatetweetfromuser' or msg['text'] == '/updatetweetfromuser@seahawks_tg_bot':
-            bot.sendMessage(chat_id, 'Select an Insider To Update the Tweets Of',
-                            reply_markup=ReplyKeyboardMarkup(
-                                keyboard=updatetweetboard
-                            ))
-
-        # used to check if user wants latest tweets from a specific insider
-        elif msg['text'].split(' ')[-1] == 'update' and msg['text'][0] == '@':
-            screen_name = msg['text'].split(' ')[0][1:]
-            data = miner.mine_user_tweets(screen_name=screen_name)
-            if data == "":
-                bot.sendMessage(
-                    chat_id, "No new tweets found from " + screen_name)
-            else:
-                bot.sendMessage(chat_id, data)
+def add_chat_id(update: Update, context: CallbackContext) -> None:
+    chat_ids.add(update.message.chat_id)
 
 # sends to a chat the updates from update_tweets automatically
 
 
-def update_tweets(chat_ids):
-    print(chat_ids)
+def schedule_tweets(context: CallbackContext) -> None:
     data = miner.mine_all_tweets()
-    if len(data) != 0:
-        for chat_id in chat_ids:
+    for chat_id in chat_ids:
+        if len(data) == 0:
+            context.bot.send_message(chat_id=chat_id, text="No activity")
+        else:
             for i in data:
-                bot.sendMessage(chat_id, i)
+                context.bot.send_message(chat_id=chat_id, text=i)
+
+# what to send on starting the bot
+
+
+def start(update: Update, context: CallbackContext) -> None:
+    update.message.reply_text(
+        f'Hello {update.effective_user.first_name}\nI am Seahawks Twitter Feed, a bot that routinely accesses twitter to pull the most recent Seahawks-related information from a list of reputable, verified sources.')
+
+
+def cancel(update: Update, context: CallbackContext) -> int:
+    update.message.reply_text(
+        'Cancelled request.', reply_markup=ReplyKeyboardRemove()
+    )
+    return ConversationHandler.END
+
+# returns a list of all insiders used
+
+
+def getinsiders(update: Update, context: CallbackContext) -> int:
+    update.message.reply_text(miner.get_insiders())
+
+# returns the latest tweets of all users
+
+
+def getlatesttweets(update: Update, context: CallbackContext) -> None:
+    data = miner.get_insiders_latest_tweets()
+    for i in data:
+        update.message.reply_text(i)
+
+# process the latest tweet provided based on insider
+
+
+def processlatest(update: Update, context: CallbackContext) -> int:
+    msg = update.message.text
+    update.message.reply_text(miner.get_insider_latest_tweet(
+        screen_name=msg))
+    return ConversationHandler.END
+
+# returns the latest tweet of a user selected by the user from the latesttweetbuttonboard
+
+
+def getlatesttweetfromuser(update: Update, context: CallbackContext) -> int:
+    reply_markup = ReplyKeyboardMarkup(
+        keyboard=tweetboard, one_time_keyboard=True)
+    update.message.reply_text(
+        'Select an Insider To Get the Latest Tweet Of (Type /cancel to cancel)', reply_markup=reply_markup)
+    return GETINSIDER
+
+# process the list of tweets based on the keyword
+
+
+def processkeyword(update: Update, context: CallbackContext) -> int:
+    msg = update.message.text
+    data = miner.mine_for_new_tweets_with_keyword(msg)
+    if len(data) == 0:
+        update.message.reply_text(
+            "No tweets found in the last 12 hours containing " + msg)
+    for i in data:
+        update.message.reply_text(i)
+    return ConversationHandler.END
+
+# returns the latest tweet of a user selected by the user from the latesttweetbuttonboard
+
+
+def gettweetswithkeyword(update: Update, context: CallbackContext) -> int:
+    update.message.reply_text(
+        "Please type your keyword in the chat (Type /cancel to cancel)")
+    return GETKEYWORD
+
+# updates tweets to newest cycle
+
+
+def updatetweets(update: Update, context: CallbackContext) -> None:
+    data = miner.mine_all_tweets()
+    if len(data) == 0:
+        update.message.reply_text("No new tweets found since last request")
     else:
-        bot.sendMessage(227934038, "No Data")
+        for i in data:
+            update.message.reply_text(i)
+
+# process the latest tweet provided based on insider
+
+
+def processupdate(update: Update, context: CallbackContext) -> int:
+    msg = update.message.text
+    data = miner.mine_user_tweets(screen_name=msg)
+    if data == "":
+        update.message.reply_text("No new tweets found from " + msg)
+    else:
+        update.message.reply_text(data)
+    return ConversationHandler.END
+
+
+# returns the latest tweet of a user selected by the user from the latesttweetbuttonboard
+
+def updatetweetfromuser(update: Update, context: CallbackContext) -> int:
+    reply_markup = ReplyKeyboardMarkup(
+        keyboard=tweetboard, one_time_keyboard=True)
+    update.message.reply_text(
+        'Select an Insider To Get the Latest Tweet Of (Type /cancel to cancel)', reply_markup=reply_markup)
+    return GETINSIDERUPDATE
 
 
 # Program startup, establishes miner, keyboard prompts, and connects with telegram API
@@ -105,26 +137,64 @@ def update_tweets(chat_ids):
 if __name__ == "__main__":
     miner = TweetMiner()
 
-    latesttweetboard = []
+    tweetboard = []
     for item in miner.insider_handles:
-        latesttweetboard.append(KeyboardButton(
-            text="@"+item+" latest"))
-    latesttweetboard = [latesttweetboard[i:i + 4]
-                        for i in range(0, len(latesttweetboard), 4)]
-
-    updatetweetboard = []
-    for item in miner.insider_handles:
-        updatetweetboard.append(KeyboardButton(
-            text="@"+item+" update"))
-    updatetweetboard = [updatetweetboard[i:i + 4]
-                        for i in range(0, len(updatetweetboard), 4)]
+        tweetboard.append(KeyboardButton(
+            text="@"+item))
+    tweetboard = [tweetboard[i:i + 4]
+                  for i in range(0, len(tweetboard), 4)]
 
     TOKEN = os.environ.get("TelegramAPI")
-    bot = telepot.Bot(TOKEN)
-    MessageLoop(bot, handle_msg).run_as_thread()
+    updater = Updater(TOKEN, use_context=True)
+    updates = updater.bot.get_updates()
+    updater.dispatcher.add_handler(CommandHandler('start', start))
 
-    print('Listening ...')
+    updater.dispatcher.add_handler(CommandHandler('getinsiders', getinsiders))
+    updater.dispatcher.add_handler(
+        CommandHandler('getlatesttweets', getlatesttweets))
 
-    while(1):
-        update_tweets(chat_ids)
-        sleep(900)
+    latest_tweet_conv_handler = ConversationHandler(
+        entry_points=[CommandHandler(
+            'getlatesttweetfromuser', getlatesttweetfromuser)],
+        states={
+            GETINSIDER: [MessageHandler(
+                Filters.regex('^[@].*$'), processlatest)]
+        },
+        fallbacks=[CommandHandler('cancel', cancel)]
+    )
+    updater.dispatcher.add_handler(latest_tweet_conv_handler)
+
+    keyword_conv_handler = ConversationHandler(
+        entry_points=[CommandHandler(
+            'gettweetswithkeyword', gettweetswithkeyword)],
+        states={
+            GETKEYWORD: [MessageHandler(
+                Filters.text, processkeyword)]
+        },
+        fallbacks=[CommandHandler('cancel', cancel)]
+    )
+    updater.dispatcher.add_handler(keyword_conv_handler)
+
+    updater.dispatcher.add_handler(
+        CommandHandler('updatetweets', updatetweets))
+
+    update_tweet_conv_handler = ConversationHandler(
+        entry_points=[CommandHandler(
+            'updatetweetfromuser', updatetweetfromuser)],
+        states={
+            GETINSIDERUPDATE: [MessageHandler(
+                Filters.regex('^[@].*$'), processupdate)]
+        },
+        fallbacks=[CommandHandler('cancel', cancel)]
+    )
+    updater.dispatcher.add_handler(update_tweet_conv_handler)
+
+    updater.dispatcher.add_handler(MessageHandler(
+        Filters._StatusUpdate.new_chat_members, add_chat_id))
+
+    print("Listening...")
+    job_queue = updater.job_queue
+    job_queue.run_repeating(schedule_tweets, interval=900)
+
+    updater.start_polling()
+    updater.idle()
