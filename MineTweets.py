@@ -124,8 +124,14 @@ class TweetMiner():
                 latest_tweet = statuses[len(statuses)-1]
                 self.user_to_latest_tweet_id[user_id] = latest_tweet.id
                 self.tweet_id_to_text[latest_tweet.id] = latest_tweet.full_text
-                self.tweet_id_to_quoted_text[latest_tweet.id] = latest_tweet.quoted_status.full_text
-                self.tweet_id_to_quoted_screen_name[latest_tweet.id] = latest_tweet.quoted_status.user.name
+                try:
+                    quote_text = latest_tweet.quoted_status.full_text
+                    quote_name = latest_tweet.quoted_status.user.name
+                    self.tweet_id_to_quoted_text[latest_tweet.id] = quote_text
+                    self.tweet_id_to_quoted_screen_name[latest_tweet.id] = quote_name
+                except:
+                    quote_text = None
+                    quote_name = None
             else:
                 return "This user is either not valid or is not considered a reputable source"
             total = 0

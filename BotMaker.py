@@ -24,9 +24,7 @@ def add_chat_id(update: Update, context: CallbackContext) -> None:
 def schedule_tweets(context: CallbackContext) -> None:
     data = miner.mine_all_tweets()
     for chat_id in chat_ids:
-        if len(data) == 0:
-            context.bot.send_message(chat_id=chat_id, text="No activity")
-        else:
+        if len(data) != 0:
             for i in data:
                 context.bot.send_message(chat_id=chat_id, text=i)
 
