@@ -96,6 +96,8 @@ def update_tweets(chat_ids):
         for chat_id in chat_ids:
             for i in data:
                 bot.sendMessage(chat_id, i)
+    else:
+        bot.sendMessage(227934038, "No Data")
 
 
 # Program startup, establishes miner, keyboard prompts, and connects with telegram API
