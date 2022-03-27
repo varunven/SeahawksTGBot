@@ -121,7 +121,11 @@ class TweetMiner():
                     user_id=user_id, since_id=latest_tweet_id, include_rts=False, exclude_replies=True, tweet_mode="extended")
                 if len(statuses) == 0:
                     return ""
-                self.user_to_latest_tweet_id[user_id] = statuses[0].id
+                latest_tweet = statuses[len(statuses)-1]
+                self.user_to_latest_tweet_id[user_id] = latest_tweet.id
+                self.tweet_id_to_text[latest_tweet.id] = latest_tweet.full_text
+                self.tweet_id_to_quoted_text[latest_tweet.id] = latest_tweet.quoted_status.full_text
+                self.tweet_id_to_quoted_screen_name[latest_tweet.id] = latest_tweet.quoted_status.user.name
             else:
                 return "This user is either not valid or is not considered a reputable source"
             total = 0
